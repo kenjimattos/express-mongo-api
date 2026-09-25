@@ -1,5 +1,7 @@
 import express from "express";
 import connectDatabase from "./config/dbConnect.js";
+import errorHandler from "./middlewares/errorHandler.js";
+import notFoundHandler from "./middlewares/notFoundHandler.js";
 import routes from "./routes/index.js";
 
 const dbConnect = await connectDatabase();
@@ -14,5 +16,8 @@ dbConnect.once("open", () => {
 
 const app = express();
 routes(app);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;

@@ -1,4 +1,5 @@
 import userModel from "../models/userModel.js";
+import NotFoundError from "../middlewares/errors/notFoundError.js";
 
 class UserController {
   static async getUsers(req, res) {
@@ -11,48 +12,62 @@ class UserController {
         .json({ message: `${error.message} - failed to list users` });
     }
   }
-  static async getUserById(req, res) {
+
+  static async getUserById(req, res, next) {
     try {
-      const id  = req.params.id;
+      const id = req.params.id;
       const userDoc = await userModel.findById(id);
-      res.status(200).json(userDoc);
+
+      if (userDoc !== null) {
+        res.status(200).json(userDoc);
+      } else {
+        // return res.status(404).json({ message:  });
+        next(new NotFoundError("Could not find user. User ID not found"));
+      }
+
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: `${error.message} - failed to find user` });
+      next(error);
     }
   }
-  static async createUser(req, res) {
+
+  static async createUser(req, res, next) {
     try {
       const newUser = await userModel.create(req.body);
       res.status(201).json({ message: "User created successfully", user: newUser });
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: `${error.message} - failed to create user` });
+      next(error);
     }
   }
-  static async updateUser(req, res) {
+
+  static async updateUser(req, res, next) {
     try {
-      const id  = req.params.id;
+      const id = req.params.id;
       await userModel.findByIdAndUpdate(id, req.body);
       const updatedUser = await userModel.findById(id);
-      res.status(201).json({ message: "User updated successfully", user: updatedUser });
+
+      if (updatedUser !== null) {
+        res.status(201).json({ message: "User updated successfully", user: updatedUser });
+      } else {
+        next(new NotFoundError("Could not update user. User ID not found"));
+      }
+
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: `${error.message} - failed to update user` });
+      next(error);
     }
   }
-  static async removeUser(req, res) {
+
+  static async removeUser(req, res, next) {
     try {
-      const id  = req.params.id;
+      const id = req.params.id;
       const deletedUser = await userModel.findByIdAndDelete(id);
-      res.status(201).json({ message: "User removed successfully", user: deletedUser });
+
+      if (deletedUser !== null) {
+        res.status(201).json({ message: "User removed successfully", user: deletedUser });
+      } else {
+        next(new NotFoundError("Could not remove user. User ID not found"));
+      }
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: `${error.message} - failed to remove user` });
+      next(error);
     }
   }
 };
