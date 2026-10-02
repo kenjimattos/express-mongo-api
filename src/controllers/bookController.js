@@ -1,11 +1,13 @@
 import bookModel from "../models/bookModel.js";
-import { authorModel } from "../models/authorModel.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
 class BookController {
   static async getBooks(req, res) {
     try {
-      const booksList = await bookModel.find({});
+      const booksList = await bookModel.find()
+        .populate("author")
+        .exec();
+
       res.status(200).json(booksList);
     } catch (error) {
       res
@@ -17,7 +19,9 @@ class BookController {
   static async getBookById(req, res, next) {
     try {
       const id = req.params.id;
-      const bookDoc = await bookModel.findById(id);
+      const bookDoc = await bookModel.findById(id)
+        .populate("author", "name")
+        .exec();
 
       if (bookDoc !== null) {
         res.status(200).json(bookDoc);
@@ -31,11 +35,9 @@ class BookController {
   }
 
   static async createBook(req, res, next) {
-    const newBook = req.body;
     try {
-      const author = await authorModel.findById(newBook.author);
-      const fullBook = { ...newBook, author: { ...author._doc } };
-      const createdBook = await bookModel.create(fullBook);
+      let newBook = new bookModel(req.body);
+      const createdBook = await newBook.save();
 
       res.status(201).json({ message: "Book created successfully", book: createdBook });
     } catch (error) {
