@@ -6,8 +6,6 @@ import ValidationError from "./errors/validationError.js";
 
 // eslint-disable-next-line no-unused-vars
 function errorHandler(error, req, res, next) {
-  // Error print for development
-  console.log(error);
 
   if (error instanceof mongoose.Error.CastError) {
     new BadRequestError().sendResponse(res);
