@@ -1,4 +1,4 @@
-import userModel from "../models/userModel.js";
+import { userModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
 class UserController {

@@ -1,4 +1,4 @@
-import bookModel from "../models/bookModel.js";
+import { bookModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
 class BookController {

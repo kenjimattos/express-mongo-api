@@ -1,4 +1,4 @@
-import { authorModel } from "../models/authorModel.js";
+import { authorModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
 class AuthorController {
