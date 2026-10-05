@@ -1,4 +1,4 @@
-import { bookModel } from "../models/index.js";
+import { authorModel, bookModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
 class BookController {
@@ -76,15 +76,54 @@ class BookController {
     }
   }
 
-  static async queryBooksByPublisher(req, res, next) {
-    const publisher = req.query.publisher;
+  static async queryBooks(req, res, next) {
     try {
-      const booksByPublisher = await bookModel.find({ publisher: publisher });
-      res.status(200).json(booksByPublisher);
+      const query = await processQuery(req.query);
+
+      if (query !== null) {
+        const queriedBooks = await bookModel
+          .find(query)
+          .populate("author");
+
+          res.status(200).json(queriedBooks);
+      } else {
+        res.status(200).send([]);
+      }
     } catch (error) {
       next(error);
     }
   }
-};
+}
+
+async function processQuery(queryParams) {
+      const { publisher, title, minPrice, maxPrice, authorName } = queryParams;
+
+      let query = {};
+
+      if (publisher) query.publisher = { $regex: publisher, $options: "i" };
+      if (title) query.title = {  $regex: title, $options: "i" };
+
+      if (minPrice || maxPrice) {
+        query.price = {};
+        if (minPrice) query.price.$gte = parseFloat(minPrice);
+        if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+      }
+
+      if (authorName) {
+        const author = await authorModel.findOne({ name: { $regex: authorName, $options: "i"} });
+
+        if (author !== null) {
+          query.author = author._id;
+        } else {
+          query = null
+        }
+      };
+
+      if (Object.values(query).length === 0){
+        query = null;
+      }
+
+    return query;
+  }
 
 export default BookController;
