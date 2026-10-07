@@ -2,10 +2,12 @@ import { userModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
 class UserController {
-  static async getUsers(req, res) {
+  static getUsers(req, res, next) {
     try {
-      const usersList = await userModel.find({});
-      res.status(200).json(usersList);
+      const usersList = userModel.find({});
+
+      req.result = usersList;
+      next();
     } catch (error) {
       res
         .status(500)

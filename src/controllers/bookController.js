@@ -1,32 +1,13 @@
 import { authorModel, bookModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
-import BadRequestError from "../middlewares/errors/badRequestError.js";
 
 class BookController {
-  static async getBooks(req, res, next) {
+  static getBooks(req, res, next) {
     try {
-      let { limit, page, orderBy = "title:1" } = req.query;
+      const booksList = bookModel.find().populate("author");
 
-      limit = limit ? parseInt(limit) : 5;
-      page = page ? parseInt(page) : 1;
-
-      let [field, order] = orderBy.split(":");
-
-      field = field ? field : "title";
-      order = order ? parseInt(order) : 1;
-
-      if (limit > 0 && page > 0) {
-        const booksList = await bookModel.find()
-          .sort({ [field]: order })
-          .skip((page - 1) * limit)
-          .limit(limit)
-          .populate("author")
-          .exec();
-  
-        res.status(200).json(booksList);
-      } else {
-        next(new BadRequestError("Limit and page must be greater than 0"));
-      }
+      req.result = booksList;
+      next();
     } catch (error) {
       next(error);
     }
@@ -35,7 +16,8 @@ class BookController {
   static async getBookById(req, res, next) {
     try {
       const id = req.params.id;
-      const bookDoc = await bookModel.findById(id)
+      const bookDoc = await bookModel
+        .findById(id)
         .populate("author", "name")
         .exec();
 
@@ -44,7 +26,6 @@ class BookController {
       } else {
         next(new NotFoundError("Could not find book. Book ID not found"));
       }
-
     } catch (error) {
       next(error);
     }
@@ -55,7 +36,9 @@ class BookController {
       let newBook = new bookModel(req.body);
       const createdBook = await newBook.save();
 
-      res.status(201).json({ message: "Book created successfully", book: createdBook });
+      res
+        .status(201)
+        .json({ message: "Book created successfully", book: createdBook });
     } catch (error) {
       next(error);
     }
@@ -68,7 +51,9 @@ class BookController {
       const updatedBook = await bookModel.findById(id);
 
       if (updatedBook !== null) {
-        res.status(201).json({ message: "Book updated successfully", book: updatedBook });
+        res
+          .status(201)
+          .json({ message: "Book updated successfully", book: updatedBook });
       } else {
         next(new NotFoundError("Could not update book. Book ID not found"));
       }
@@ -83,7 +68,9 @@ class BookController {
       const deletedBook = await bookModel.findByIdAndDelete(id);
 
       if (deletedBook !== null) {
-        res.status(201).json({ message: "Book removed successfully", book: deletedBook });
+        res
+          .status(201)
+          .json({ message: "Book removed successfully", book: deletedBook });
       } else {
         next(new NotFoundError("Could not remove book. Book ID not found"));
       }
@@ -97,11 +84,10 @@ class BookController {
       const query = await processQuery(req.query);
 
       if (query !== null) {
-        const queriedBooks = await bookModel
-          .find(query)
-          .populate("author");
+        const queriedBooks = bookModel.find(query).populate("author");
 
-          res.status(200).json(queriedBooks);
+        req.result = queriedBooks;
+        next();
       } else {
         res.status(200).send([]);
       }
@@ -112,34 +98,36 @@ class BookController {
 }
 
 async function processQuery(queryParams) {
-      const { publisher, title, minPrice, maxPrice, authorName } = queryParams;
+  const { publisher, title, minPrice, maxPrice, authorName } = queryParams;
 
-      let query = {};
+  let query = {};
 
-      if (publisher) query.publisher = { $regex: publisher, $options: "i" };
-      if (title) query.title = {  $regex: title, $options: "i" };
+  if (publisher) query.publisher = { $regex: publisher, $options: "i" };
+  if (title) query.title = { $regex: title, $options: "i" };
 
-      if (minPrice || maxPrice) {
-        query.price = {};
-        if (minPrice) query.price.$gte = parseFloat(minPrice);
-        if (maxPrice) query.price.$lte = parseFloat(maxPrice);
-      }
-
-      if (authorName) {
-        const author = await authorModel.findOne({ name: { $regex: authorName, $options: "i"} });
-
-        if (author !== null) {
-          query.author = author._id;
-        } else {
-          query = null
-        }
-      };
-
-      if (Object.values(query).length === 0){
-        query = null;
-      }
-
-    return query;
+  if (minPrice || maxPrice) {
+    query.price = {};
+    if (minPrice) query.price.$gte = parseFloat(minPrice);
+    if (maxPrice) query.price.$lte = parseFloat(maxPrice);
   }
+
+  if (authorName) {
+    const author = await authorModel.findOne({
+      name: { $regex: authorName, $options: "i" },
+    });
+
+    if (author !== null) {
+      query.author = author._id;
+    } else {
+      query = null;
+    }
+  }
+
+  if (Object.values(query).length === 0) {
+    query = null;
+  }
+
+  return query;
+}
 
 export default BookController;

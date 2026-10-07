@@ -2,10 +2,13 @@ import { authorModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
 class AuthorController {
-  static async getAuthors(req, res) {
+  static getAuthors(req, res, next) {
     try {
-      const authorsList = await authorModel.find({});
-      res.status(200).json(authorsList);
+      const authorsList = authorModel.find({});
+
+      req.result = authorsList;
+
+      next();
     } catch (error) {
       res
         .status(500)
@@ -32,7 +35,9 @@ class AuthorController {
       const newAuthor = await authorModel.create(req.body);
 
       if (newAuthor !== null) {
-        res.status(201).json({ message: "Author created successfully", author: newAuthor });
+        res
+          .status(201)
+          .json({ message: "Author created successfully", author: newAuthor });
       } else {
         next(new NotFoundError("Could not create author"));
       }
@@ -48,11 +53,15 @@ class AuthorController {
       const updatedAuthor = await authorModel.findById(id);
 
       if (updatedAuthor !== null) {
-        res.status(201).json({ message: "Author updated successfully", author: updatedAuthor });
+        res
+          .status(201)
+          .json({
+            message: "Author updated successfully",
+            author: updatedAuthor,
+          });
       } else {
         next(new NotFoundError("Could not update author. Author ID not found"));
       }
-
     } catch (error) {
       next(error);
     }
@@ -64,7 +73,12 @@ class AuthorController {
       const deletedAuthor = await authorModel.findByIdAndDelete(id);
 
       if (deletedAuthor !== null) {
-        res.status(201).json({ message: "Author removed successfully", author: deletedAuthor });
+        res
+          .status(201)
+          .json({
+            message: "Author removed successfully",
+            author: deletedAuthor,
+          });
       } else {
         next(new NotFoundError("Could not remove author. Author ID not found"));
       }
@@ -72,6 +86,6 @@ class AuthorController {
       next(error);
     }
   }
-};
+}
 
 export default AuthorController;
