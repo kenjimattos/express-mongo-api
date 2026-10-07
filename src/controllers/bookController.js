@@ -1,18 +1,28 @@
 import { authorModel, bookModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
+import BadRequestError from "../middlewares/errors/badRequestError.js";
 
 class BookController {
-  static async getBooks(req, res) {
+  static async getBooks(req, res, next) {
     try {
-      const booksList = await bookModel.find()
-        .populate("author")
-        .exec();
+      let { limit, page } = req.query;
 
-      res.status(200).json(booksList);
+      limit = limit ? parseInt(limit) : 5;
+      page = page ? parseInt(page) : 1;
+
+      if (limit > 0 && page > 0) {
+        const booksList = await bookModel.find()
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .populate("author")
+          .exec();
+  
+        res.status(200).json(booksList);
+      } else {
+        next(new BadRequestError("Limit and page must be greater than 0"));
+      }
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: `${error.message} - failed to list books` });
+      next(error);
     }
   }
 
