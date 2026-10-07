@@ -5,13 +5,19 @@ import BadRequestError from "../middlewares/errors/badRequestError.js";
 class BookController {
   static async getBooks(req, res, next) {
     try {
-      let { limit, page } = req.query;
+      let { limit, page, orderBy = "title:1" } = req.query;
 
       limit = limit ? parseInt(limit) : 5;
       page = page ? parseInt(page) : 1;
 
+      let [field, order] = orderBy.split(":");
+
+      field = field ? field : "title";
+      order = order ? parseInt(order) : 1;
+
       if (limit > 0 && page > 0) {
         const booksList = await bookModel.find()
+          .sort({ [field]: order })
           .skip((page - 1) * limit)
           .limit(limit)
           .populate("author")
