@@ -1,7 +1,7 @@
 import { userModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
-class UserController {
+class UsersController {
   static getUsers(req, res, next) {
     try {
       const usersList = userModel.find({});
@@ -74,4 +74,4 @@ class UserController {
   }
 };
 
-export default UserController;
+export default UsersController;

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-const usersSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -27,11 +27,11 @@ const usersSchema = new mongoose.Schema(
   { versionKey: false },
 );
 
-usersSchema.pre("save", async function () {
+userSchema.pre("save", async function () {
   if (!this.isModified("password")) return; // evita re-hash em updates
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-const userModel = mongoose.model("users", usersSchema);
+const userModel = mongoose.model("user", userSchema);
 
 export default userModel;

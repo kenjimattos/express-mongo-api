@@ -17,31 +17,31 @@ The project follows the MVC (Model-View-Controller) pattern: Mongoose schemas in
 
 ### Authors
 
-| Method | Route         | Description         |
-| ------ | ------------- | ------------------- |
-| GET    | `/author`     | List authors        |
-| GET    | `/author/:id` | Get author by ID    |
-| POST   | `/author`     | Create author       |
-| PUT    | `/author/:id` | Update author       |
-| DELETE | `/author/:id` | Delete author       |
+| Method | Route          | Description      |
+| ------ | -------------- | ---------------- |
+| GET    | `/authors`     | List authors     |
+| GET    | `/authors/:id` | Get author by ID |
+| POST   | `/authors`     | Create author    |
+| PUT    | `/authors/:id` | Update author    |
+| DELETE | `/authors/:id` | Delete author    |
 
 ### Books
 
-| Method | Route                              | Description               |
-| ------ | ---------------------------------- | ------------------------- |
-| GET    | `/book`                            | List books                |
-| GET    | `/book/query?publisher=<publisher>` | Find books by publisher   |
-| GET    | `/book/:id`                        | Get book by ID            |
-| POST   | `/book`                            | Create book               |
-| PUT    | `/book/:id`                        | Update book               |
-| DELETE | `/book/:id`                        | Delete book               |
+| Method | Route                                | Description             |
+| ------ | ------------------------------------ | ----------------------- |
+| GET    | `/books`                             | List books              |
+| GET    | `/books/query?publisher=<publisher>` | Find books by publisher |
+| GET    | `/books/:id`                         | Get book by ID          |
+| POST   | `/books`                             | Create book             |
+| PUT    | `/books/:id`                         | Update book             |
+| DELETE | `/books/:id`                         | Delete book             |
 
 ### Users
 
-| Method | Route       | Description       |
-| ------ | ----------- | ----------------- |
-| GET    | `/user`     | List users        |
-| GET    | `/user/:id` | Get user by ID    |
-| POST   | `/user`     | Create user       |
-| PUT    | `/user/:id` | Update user       |
-| DELETE | `/user/:id` | Delete user       |
+| Method | Route        | Description    |
+| ------ | ------------ | -------------- |
+| GET    | `/users`     | List users     |
+| GET    | `/users/:id` | Get user by ID |
+| POST   | `/users`     | Create user    |
+| PUT    | `/users/:id` | Update user    |
+| DELETE | `/users/:id` | Delete user    |

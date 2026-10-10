@@ -1,7 +1,7 @@
 import { authorModel, bookModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
-class BookController {
+class BooksController {
   static getBooks(req, res, next) {
     try {
       const booksList = bookModel.find().populate("author");
@@ -130,4 +130,4 @@ async function processQuery(queryParams) {
   return query;
 }
 
-export default BookController;
+export default BooksController;

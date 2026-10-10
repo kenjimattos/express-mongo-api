@@ -1,7 +1,7 @@
 import { authorModel } from "../models/index.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
-class AuthorController {
+class AuthorsController {
   static getAuthors(req, res, next) {
     try {
       const authorsList = authorModel.find({});
@@ -88,4 +88,4 @@ class AuthorController {
   }
 }
 
-export default AuthorController;
+export default AuthorsController;
