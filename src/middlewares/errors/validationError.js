@@ -6,7 +6,7 @@ class ValidationError extends BadRequestError {
       .map((err) => err.message)
       .join(", ");
 
-    super(`Validation error: ${errorMessage}`);
+    super(`Validation error: ${errorMessage}`, "VALIDATION_ERROR");
   }
 }
 
