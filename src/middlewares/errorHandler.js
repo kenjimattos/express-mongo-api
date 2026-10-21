@@ -3,7 +3,7 @@ import BadRequestError from "./errors/badRequestError.js";
 import BaseError from "./errors/baseError.js";
 import ValidationError from "./errors/validationError.js";
 
-// eslint-disable-next-line no-unused-vars
+ 
 function errorHandler(error, req, res, next) {
 
   if (error instanceof mongoose.Error.CastError) {

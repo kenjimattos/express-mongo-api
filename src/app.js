@@ -12,7 +12,7 @@ dbConnect.on("error", (erro) => {
 
 dbConnect.once("open", () => {
   console.log("Database successfully connected");
-})
+});
 
 const app = express();
 routes(app);

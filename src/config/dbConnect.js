@@ -9,4 +9,4 @@ async function connectDatabase() {
   
 };
 
-export default connectDatabase
+export default connectDatabase;
