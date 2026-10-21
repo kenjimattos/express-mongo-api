@@ -9,9 +9,7 @@ class UsersController {
       req.result = usersList;
       next();
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: `${error.message} - failed to list users` });
+      next(error);
     }
   }
 
