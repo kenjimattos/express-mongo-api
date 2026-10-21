@@ -14,4 +14,32 @@ export default defineConfig([
       }
     }
   },
+  {
+    rules: {
+      "indent": [
+        "error",
+        2
+      ],
+      "linebreak-style": [
+        "error",
+        "unix"
+      ],
+      "quotes": [
+        "error",
+        "double"
+      ],
+      "semi": [
+        "error",
+        "always"
+      ],
+      "no-unused-vars": [
+        "error",
+        {
+          vars: "all",
+          args: "none",
+          ignoreRestSiblings: false,
+        },
+      ],
+    },
+  },
 ]);
