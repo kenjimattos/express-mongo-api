@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon --env-file=.env server.js",
     "test:e2e": "node --env-file=.env --test 'test/*.e2e.js'",
+    "test:int": "node --env-file=.env --test 'test/*.int.js'",
     "lint": "npx eslint"
   },
   "keywords": [],
