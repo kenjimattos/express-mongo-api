@@ -1,20 +1,13 @@
 import BadRequestError from "../middlewares/errors/badRequestError.js";
+import parsePagination from "../utils/parsePagination.js";
 
 async function pagination(req, res, next) {
   try {
-    let { limit, page, orderBy = "_id:-1" } = req.query;
-
-    limit = limit ? parseInt(limit) : 5;
-    page = page ? parseInt(page) : 1;
-
-    let [field, order] = orderBy.split(":");
-
-    field = field ? field : "title";
-    order = order ? parseInt(order) : 1;
+    const { limit, page, sort } = parsePagination(req.query, req.result.schema);
 
     if (limit > 0 && page > 0) {
       const pagedList = await req.result.find()
-        .sort({ [field]: order })
+        .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
         .exec();
