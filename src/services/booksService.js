@@ -1,4 +1,5 @@
 import { authorModel, bookModel } from "../models/index.js";
+import BadRequestError from "../middlewares/errors/badRequestError.js";
 
 class BooksService {
   getBooks () {
@@ -10,6 +11,15 @@ class BooksService {
   }
 
   async createBook(data) {
+
+    if (data.author) {
+      const author = await authorModel.findById(data.author);
+
+      if (!author) {
+        throw new BadRequestError("Can't create book: author not found.");
+      }
+    }
+
     return bookModel.create(data);
   }
 
