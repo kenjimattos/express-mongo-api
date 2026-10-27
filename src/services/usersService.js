@@ -1,4 +1,5 @@
 import { userModel } from "../models/index.js";
+import BadRequestError from "../middlewares/errors/badRequestError.js";
 
 class UsersService {
   getUsers() {
@@ -10,6 +11,12 @@ class UsersService {
   }
 
   async createUser(data) {
+    const existing = await userModel.findOne({ email: data.email });
+    
+    if (existing) {
+      throw new BadRequestError("Email already registered");
+    }
+
     return userModel.create(data);
   }
 
