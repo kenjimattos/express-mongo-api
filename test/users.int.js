@@ -40,4 +40,17 @@ describe("Users Integration", () => {
       },
     );
   });
+
+  test("update user password hashes the new password", async () => {
+    const user = await mongoose.connection.collection("users").findOne({
+      email: "johndoe@example.com",
+    });
+    assert.ok(user);
+    
+    const updated = await usersService.updateUser(user._id, {
+      password: "newpassword456",
+    });
+
+    assert.notStrictEqual(updated.password, "newpassword456");
+  });
 });
