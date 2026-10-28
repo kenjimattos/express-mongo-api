@@ -24,7 +24,15 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
   },
-  { versionKey: false },
+  {
+    versionKey: false,
+    toJSON: {
+      transform: (_doc, ret) => {
+        delete ret.password;
+        return ret;
+      },
+    },
+  },
 );
 
 userSchema.pre("save", async function () {
