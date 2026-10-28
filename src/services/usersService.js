@@ -21,7 +21,13 @@ class UsersService {
   }
 
   async updateUser(id, data) {
-    return userModel.findByIdAndUpdate(id, data, { new: true });
+    // Use .save() method so that schema validators, setters, and pre-save hooks (e.g. password hashing) are executed.
+    const user = await userModel.findById(id);
+    
+    if (user === null) return null;
+    
+    user.set(data);
+    return user.save();
   }
 
   async removeUser(id) {
