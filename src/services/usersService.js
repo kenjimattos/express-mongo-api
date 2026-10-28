@@ -14,7 +14,7 @@ class UsersService {
     const existing = await userModel.findOne({ email: data.email });
     
     if (existing) {
-      throw new BadRequestError("Email already registered");
+      throw new BadRequestError("Can't create user: e-mail already registered");
     }
 
     return userModel.create(data);
