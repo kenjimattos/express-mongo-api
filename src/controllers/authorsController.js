@@ -54,7 +54,7 @@ class AuthorsController {
 
       if (updatedAuthor !== null) {
         res
-          .status(201)
+          .status(200)
           .json({
             message: "Author updated successfully",
             author: updatedAuthor,
