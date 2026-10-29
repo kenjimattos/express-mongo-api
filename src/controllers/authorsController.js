@@ -1,10 +1,12 @@
-import { authorModel } from "../models/index.js";
+import AuthorsService from "../services/authorsService.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
+
+const authorsService = new AuthorsService();
 
 class AuthorsController {
   static getAuthors(req, res, next) {
     try {
-      const authorsList = authorModel.find({});
+      const authorsList = authorsService.getAuthors();
 
       req.result = authorsList;
 
@@ -19,7 +21,8 @@ class AuthorsController {
   static async getAuthorById(req, res, next) {
     try {
       const id = req.params.id;
-      const authorDoc = await authorModel.findById(id);
+      const authorDoc = await authorsService.getAuthorById(id);
+
       if (authorDoc !== null) {
         res.status(200).json(authorDoc);
       } else {
@@ -32,7 +35,7 @@ class AuthorsController {
 
   static async createAuthor(req, res, next) {
     try {
-      const newAuthor = await authorModel.create(req.body);
+      const newAuthor = await authorsService.createAuthor(req.body);
 
       res
         .status(201)
@@ -44,9 +47,7 @@ class AuthorsController {
 
   static async updateAuthor(req, res, next) {
     try {
-      const id = req.params.id;
-      await authorModel.findByIdAndUpdate(id, req.body);
-      const updatedAuthor = await authorModel.findById(id);
+      const updatedAuthor = await authorsService.updateAuthor(req.params.id, req.body);
 
       if (updatedAuthor !== null) {
         res
@@ -66,7 +67,7 @@ class AuthorsController {
   static async removeAuthor(req, res, next) {
     try {
       const id = req.params.id;
-      const deletedAuthor = await authorModel.findByIdAndDelete(id);
+      const deletedAuthor = await authorsService.removeAuthor(id);
 
       if (deletedAuthor !== null) {
         res
@@ -82,6 +83,8 @@ class AuthorsController {
       next(error);
     }
   }
+
+
 }
 
 export default AuthorsController;
