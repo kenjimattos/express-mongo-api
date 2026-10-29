@@ -14,7 +14,7 @@ class AuthorsService {
     const existingAuthor = await authorModel.findOne({ name: data.name });
 
     if (existingAuthor) {
-      throw new BadRequestError("Can't create author: an author with this name already exists.");
+      throw new BadRequestError("Can't create author: an author with this name already exists.", "AUTHOR_NAME_ALREADY_EXISTS");
     }
 
     return authorModel.create(data);
