@@ -15,13 +15,13 @@ describe("Authors Routes", () => {
       .post("/authors")
       .send({
         name: "John Doe",
-        nacionality: "Brazilian"
+        nationality: "Brazilian"
       })
       .expect(201)
       .expect((response) => {
         const author = response.body.author;
         assert.strictEqual(author.name, "John Doe");
-        assert.strictEqual(author.nacionality, "Brazilian");
+        assert.strictEqual(author.nationality, "Brazilian");
       });
   });
 
@@ -30,7 +30,7 @@ describe("Authors Routes", () => {
       .post("/authors")
       .send({
         name: "",
-        nacionality: ""
+        nationality: ""
       })
       .expect(400)
       .expect((response) => {

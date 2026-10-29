@@ -13,7 +13,7 @@ describe("Books Routes", () => {
   test("create a new book", async () => {
     const author = await authorModel.create({
       name: "Stan Lee",
-      nacionality: "United States of America"      
+      nationality: "United States of America"      
     });
 
     await request(app)
@@ -57,7 +57,7 @@ describe("Books Routes", () => {
   test("creating a book with unexisting publisher", async () => {
     const author = await authorModel.create({
       name: "Mike Mignola",
-      nacionality: "United States of America"      
+      nationality: "United States of America"      
     });
 
     await request(app)

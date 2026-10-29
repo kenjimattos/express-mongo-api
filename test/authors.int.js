@@ -12,7 +12,7 @@ describe("Authors Integration", () => {
     await connectDatabase();
     await authorsService.createAuthor({
       name: "Steve Dikto",
-      nacionality: "American",
+      nationality: "American",
     });
   });
 
@@ -27,7 +27,7 @@ describe("Authors Integration", () => {
     await assert.rejects(
       authorsService.createAuthor({
         name: "Steve Dikto",
-        nacionality: "Canadian",
+        nationality: "Canadian",
       }),
       (error) => {
         assert.ok(error instanceof BadRequestError);

@@ -6,7 +6,7 @@ const authorSchema = new mongoose.Schema(
       type: String,
       required: [true, "Author name is required"],
     },
-    nacionality: {
+    nationality: {
       type: String,
     },
   },
