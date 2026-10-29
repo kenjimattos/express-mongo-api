@@ -34,13 +34,9 @@ class AuthorsController {
     try {
       const newAuthor = await authorModel.create(req.body);
 
-      if (newAuthor !== null) {
-        res
-          .status(201)
-          .json({ message: "Author created successfully", author: newAuthor });
-      } else {
-        next(new NotFoundError("Could not create author"));
-      }
+      res
+        .status(201)
+        .json({ message: "Author created successfully", author: newAuthor });
     } catch (error) {
       next(error);
     }
