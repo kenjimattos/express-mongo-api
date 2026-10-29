@@ -38,9 +38,10 @@ describe("Users Integration", () => {
       }),
       (error) => {
         assert.ok(error instanceof BadRequestError);
+        assert.strictEqual(error.status, 400);
         assert.strictEqual(
-          error.message,
-          "Can't create user: e-mail already registered",
+          error.type,
+          "EMAIL_ALREADY_REGISTERED",
         );
         return true;
       },

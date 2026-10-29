@@ -16,7 +16,7 @@ class BooksService {
       const author = await authorModel.findById(data.author);
 
       if (!author) {
-        throw new BadRequestError("Can't create book: author not found.");
+        throw new BadRequestError("Can't create book: author not found.", "UNEXISTING_AUTHOR");
       }
     }
 

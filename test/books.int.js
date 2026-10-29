@@ -27,7 +27,8 @@ describe("Books Integration", () => {
       }),
       (error) => {
         assert.ok(error instanceof BadRequestError);
-        assert.strictEqual(error.message, "Can't create book: author not found.");
+        assert.strictEqual(error.status, 400);
+        assert.strictEqual(error.type, "UNEXISTING_AUTHOR");
         return true;
       },
     );
