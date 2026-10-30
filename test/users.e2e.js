@@ -3,26 +3,18 @@ import mongoose from "mongoose";
 import request from "supertest";
 import app from "../src/app.js";
 import assert from "node:assert";
+import CreateHelper from "./helpers/createHelper.js";
+
+const create = new CreateHelper(app);
 
 describe("Users Routes", () => {
-  const createdIds = [];
-
-  async function createUser(data) {
-    const response = await request(app).post("/users").send(data);
-    const user = response.body.user;
-    if (user) createdIds.push(user._id);
-    return { response, user };
-  }
-
   after(async () => {
-    for (const id of createdIds) {
-      await request(app).delete(`/users/${id}`);
-    }
+    await create.cleanup();
     await mongoose.disconnect();
   });
 
   test("create a new user", async () => {
-    const { response, user } = await createUser({
+    const { response, user } = await create.user({
       name: "John Doe",
       email: "johndoe.e2e@example.com",
       password: "password123",
@@ -48,7 +40,7 @@ describe("Users Routes", () => {
   });
 
   test("get a user by id", async () => {
-    const { user } = await createUser({
+    const { user } = await create.user({
       name: "Jane Doe",
       email: "janedoe.e2e@example.com",
       password: "password123",
@@ -63,7 +55,7 @@ describe("Users Routes", () => {
   });
 
   test("delete a user by id", async () => {
-    const { user } = await createUser({
+    const { user } = await create.user({
       name: "Jim Doe",
       email: "jimdoe.e2e@example.com",
       password: "password123",

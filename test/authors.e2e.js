@@ -3,26 +3,18 @@ import mongoose from "mongoose";
 import request from "supertest";
 import app from "../src/app.js";
 import assert from "node:assert";
+import CreateHelper from "./helpers/createHelper.js";
+
+const create = new CreateHelper(app);
 
 describe("Authors Routes", () => {
-  const createdIds = [];
-
-  async function createAuthor(data) {
-    const response = await request(app).post("/authors").send(data);
-    const author = response.body.author;
-    if (author) createdIds.push(author._id);
-    return { response, author };
-  }
-
   after(async () => {
-    for (const id of createdIds) {
-      await request(app).delete(`/authors/${id}`);
-    }
+    await create.cleanup();
     await mongoose.disconnect();
   });
 
   test("create a new author", async () => {
-    const { response, author } = await createAuthor({
+    const { response, author } = await create.author({
       name: "John Doe",
       nationality: "Brazilian",
     });
@@ -46,7 +38,7 @@ describe("Authors Routes", () => {
   });
 
   test("get an author by id", async () => {
-    const { author } = await createAuthor({
+    const { author } = await create.author({
       name: "Jane Doe",
       nationality: "Brazilian",
     });
@@ -60,7 +52,7 @@ describe("Authors Routes", () => {
   });
 
   test("delete an author by id", async () => {
-    const { author } = await createAuthor({
+    const { author } = await create.author({
       name: "Jim Doe",
       nationality: "Brazilian",
     });

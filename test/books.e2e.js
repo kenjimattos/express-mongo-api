@@ -3,42 +3,23 @@ import mongoose from "mongoose";
 import request from "supertest";
 import app from "../src/app.js";
 import assert from "node:assert";
+import CreateHelper from "./helpers/createHelper.js";
+
+const create = new CreateHelper(app);
 
 describe("Books Routes", () => {
-  const createdAuthorIds = [];
-  const createdBookIds = [];
-
-  async function createAuthor(data) {
-    const response = await request(app).post("/authors").send(data);
-    const author = response.body.author;
-    if (author) createdAuthorIds.push(author._id);
-    return author;
-  }
-
-  async function createBook(data) {
-    const response = await request(app).post("/books").send(data);
-    const book = response.body.book;
-    if (book) createdBookIds.push(book._id);
-    return { response, book };
-  }
-
   after(async () => {
-    for (const id of createdBookIds) {
-      await request(app).delete(`/books/${id}`);
-    }
-    for (const id of createdAuthorIds) {
-      await request(app).delete(`/authors/${id}`);
-    }
+    await create.cleanup();
     await mongoose.disconnect();
   });
 
   test("create a new book", async () => {
-    const author = await createAuthor({
+    const { author } = await create.author({
       name: "Stan Lee",
       nationality: "United States of America",
     });
 
-    const { response, book } = await createBook({
+    const { response, book } = await create.book({
       title: "Spider-man",
       author: author._id,
       publisher: "Marvel Comics",
@@ -70,7 +51,7 @@ describe("Books Routes", () => {
   });
 
   test("creating a book with unexisting publisher", async () => {
-    const author = await createAuthor({
+    const { author } = await create.author({
       name: "Mike Mignola",
       nationality: "United States of America",
     });
@@ -91,11 +72,11 @@ describe("Books Routes", () => {
   });
 
   test("get a book by id", async () => {
-    const author = await createAuthor({
+    const { author } = await create.author({
       name: "Steve Ditko",
       nationality: "United States of America",
     });
-    const { book } = await createBook({
+    const { book } = await create.book({
       title: "Doctor Strange",
       author: author._id,
       publisher: "Marvel Comics",
@@ -112,11 +93,11 @@ describe("Books Routes", () => {
   });
 
   test("delete a book by id", async () => {
-    const author = await createAuthor({
+    const { author } = await create.author({
       name: "Jack Kirby",
       nationality: "United States of America",
     });
-    const { book } = await createBook({
+    const { book } = await create.book({
       title: "Fantastic Four",
       author: author._id,
       publisher: "Marvel Comics",
