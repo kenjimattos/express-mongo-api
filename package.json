@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --env-file=.env server.js",
-    "test": "node --env-file=.env --test 'test/*.js'",
-    "test:e2e": "node --env-file=.env --test 'test/*.e2e.js'",
-    "test:int": "node --env-file=.env --test 'test/*.int.js'",
+    "test": "node --env-file=.env.test --test 'test/*.js'",
+    "test:e2e": "node --env-file=.env.test --test 'test/*.e2e.js'",
+    "test:int": "node --env-file=.env.test --test 'test/*.int.js'",
     "lint": "npx eslint"
   },
   "keywords": [],
