@@ -3,41 +3,57 @@ import mongoose from "mongoose";
 import request from "supertest";
 import app from "../src/app.js";
 import assert from "node:assert";
-import { authorModel, bookModel } from "../src/models/index.js";
 
 describe("Books Routes", () => {
+  const createdAuthorIds = [];
+  const createdBookIds = [];
+
+  async function createAuthor(data) {
+    const response = await request(app).post("/authors").send(data);
+    const author = response.body.author;
+    if (author) createdAuthorIds.push(author._id);
+    return author;
+  }
+
+  async function createBook(data) {
+    const response = await request(app).post("/books").send(data);
+    const book = response.body.book;
+    if (book) createdBookIds.push(book._id);
+    return { response, book };
+  }
+
   after(async () => {
+    for (const id of createdBookIds) {
+      await request(app).delete(`/books/${id}`);
+    }
+    for (const id of createdAuthorIds) {
+      await request(app).delete(`/authors/${id}`);
+    }
     await mongoose.disconnect();
   });
 
   test("create a new book", async () => {
-    const author = await authorModel.create({
+    const author = await createAuthor({
       name: "Stan Lee",
-      nationality: "United States of America"      
+      nationality: "United States of America",
     });
 
-    await request(app)
-      .post("/books")
-      .send({
-        title: "Spider-man",
-        author: `${author.id}`,
-        publisher: "Marvel Comics",
-        price: 100,
-        pages: 100 
-      })
-      .expect(201)
-      .expect((response) => {
-        const book = response.body.book;
+    const { response, book } = await createBook({
+      title: "Spider-man",
+      author: author._id,
+      publisher: "Marvel Comics",
+      price: 100,
+      pages: 100,
+    });
 
-        assert.strictEqual(book.title, "Spider-man");
-        assert.strictEqual(book.publisher, "Marvel Comics");
-        assert.strictEqual(book.price, 100);
-        assert.strictEqual(book.pages, 100);
-      });
+    assert.strictEqual(response.status, 201);
+    assert.strictEqual(book.title, "Spider-man");
+    assert.strictEqual(book.publisher, "Marvel Comics");
+    assert.strictEqual(book.price, 100);
+    assert.strictEqual(book.pages, 100);
   });
 
   test("creating a book without an author", async () => {
-
     await request(app)
       .post("/books")
       .send({
@@ -45,77 +61,85 @@ describe("Books Routes", () => {
         author: "",
         publisher: "Marvel Comics",
         price: 100,
-        pages: 100 
+        pages: 100,
       })
       .expect(400)
       .expect((response) => {
-        const errorCode = response.body.type;
-        assert.strictEqual(errorCode, "VALIDATION_ERROR");
+        assert.strictEqual(response.body.type, "VALIDATION_ERROR");
       });
   });
 
   test("creating a book with unexisting publisher", async () => {
-    const author = await authorModel.create({
+    const author = await createAuthor({
       name: "Mike Mignola",
-      nationality: "United States of America"      
+      nationality: "United States of America",
     });
 
     await request(app)
       .post("/books")
       .send({
         title: "Hellboy",
-        author: `${author.id}`,
+        author: author._id,
         publisher: "Dark Horse Comics",
         price: 100,
-        pages: 100 
+        pages: 100,
       })
       .expect(400)
       .expect((response) => {
-        const errorCode = response.body.type;
-        assert.strictEqual(errorCode, "VALIDATION_ERROR");
+        assert.strictEqual(response.body.type, "VALIDATION_ERROR");
       });
-    await authorModel.findByIdAndDelete(author.id);
   });
 
   test("get a book by id", async () => {
-    const book = await bookModel.findOne({ title: "Spider-man" });
-    const bookId = book.id;
+    const author = await createAuthor({
+      name: "Steve Ditko",
+      nationality: "United States of America",
+    });
+    const { book } = await createBook({
+      title: "Doctor Strange",
+      author: author._id,
+      publisher: "Marvel Comics",
+      price: 100,
+      pages: 100,
+    });
 
     await request(app)
-      .get(`/books/${bookId}`)
-      .send({})
+      .get(`/books/${book._id}`)
       .expect(200)
       .expect((response) => {
-        const returnedBook = response.body;
-        assert.strictEqual(returnedBook.title, "Spider-man");
+        assert.strictEqual(response.body.title, "Doctor Strange");
       });
   });
 
   test("delete a book by id", async () => {
-    const book = await bookModel.findOne({ title: "Spider-man" });
-    const bookId = book.id;;
+    const author = await createAuthor({
+      name: "Jack Kirby",
+      nationality: "United States of America",
+    });
+    const { book } = await createBook({
+      title: "Fantastic Four",
+      author: author._id,
+      publisher: "Marvel Comics",
+      price: 100,
+      pages: 100,
+    });
 
     await request(app)
-      .delete(`/books/${bookId}`)
-      .send({})
+      .delete(`/books/${book._id}`)
       .expect(201)
       .expect((response) => {
-        assert.strictEqual(response.body.message, "Book removed successfully");
-        assert.strictEqual(response.body.book.title, "Spider-man");
+        assert.strictEqual(response.body.book.title, "Fantastic Four");
       });
-    
-    const authorId = book.author._id.toHexString();
-    await authorModel.findByIdAndDelete(authorId);
+
+    await request(app).get(`/books/${book._id}`).expect(404);
   });
 
   test("get a book by id that does not exist", async () => {
     await request(app)
       .get("/books/abcabcabcabcabcabcabc123")
-      .send()
       .expect(404)
       .expect((response) => {
-        const errorCode = response.body.type;
-        assert.strictEqual(errorCode, "NOT_FOUND");
+        assert.strictEqual(response.body.type, "NOT_FOUND");
       });
   });
 });
