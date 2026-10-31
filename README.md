@@ -4,6 +4,135 @@ Bookstore REST API built with Node.js, Express and MongoDB (Mongoose), providing
 
 The code is organized in layers: routes receive the request, controllers handle HTTP, services hold the business rules and Mongoose models talk to the database. As a REST API, the "view" is the JSON response.
 
+## Modeling
+
+```mermaid
+erDiagram
+    AUTHORS ||--o{ BOOKS : "writes"
+    USERS ||--o{ SALES : "makes"
+    SALES ||--|{ SALES_ITEMS : "contains"
+    BOOKS ||--o{ SALES_ITEMS : "listed in"
+
+    AUTHORS {
+        ObjectId _id PK
+        string name "required, unique"
+        string nationality
+    }
+
+    BOOKS {
+        ObjectId _id PK
+        string title "required"
+        ObjectId author FK "required, ref authors"
+        string publisher "required, enum"
+        number price "required, > 0"
+        number pages "1 to 5000"
+    }
+
+    USERS {
+        ObjectId _id PK
+        string name "required"
+        string email "required, unique"
+        string password "required, bcrypt hash"
+    }
+
+    SALES {
+        ObjectId _id PK
+        ObjectId user FK "required, ref users"
+        number total
+        string payment_type "enum"
+        SALES_ITEMS items "embedded, 1 or more"
+        date created_at
+    }
+
+    SALES_ITEMS {
+      ObjectId book FK "required, ref books"
+      number price "populated from books, required, > 0"
+      number quantity "required, >= 1"
+    }
+```
+### Data models
+
+| Resource | Fields                                                                                              |
+| -------- | --------------------------------------------------------------------------------------------------- |
+| Author   | `name` (required, unique), `nationality`                                                            |
+| Book     | `title`, `author` (author ID), `publisher`, `price` (greater than 0), `pages` (1 to 5000, optional) |
+| Publisher     | ENUMs `HarperCollins`, `DC Comics` and `Marvel Comics` |
+| User     | `name`, `email` (valid format, unique), `password`                                                  |
+| Sale     | `user` (user ID), `items` (`book`, `price`, `quantity`), `total`, `payment_type`, `created_at`              |
+
+
+## API
+
+### Authors
+
+| Method | Route          | Description      |
+| ------ | -------------- | ---------------- |
+| GET    | `/authors`     | List authors     |
+| GET    | `/authors/:id` | Get author by ID |
+| POST   | `/authors`     | Create author    |
+| PUT    | `/authors/:id` | Update author    |
+| DELETE | `/authors/:id` | Delete author    |
+
+### Books
+
+| Method | Route          | Description              |
+| ------ | -------------- | ------------------------ |
+| GET    | `/books`       | List books               |
+| GET    | `/books/query` | Search books (see below) |
+| GET    | `/books/:id`   | Get book by ID           |
+| POST   | `/books`       | Create book              |
+| PUT    | `/books/:id`   | Update book              |
+| DELETE | `/books/:id`   | Delete book              |
+
+#### Searching books
+
+`GET /books/query` accepts these filters, which can be combined (a book must match all of them)
+
+```
+GET /books/query?authorName=stan&minPrice=50&maxPrice=120
+```
+
+| Parameter    | Description                                                      |
+| ------------ | ---------------------------------------------------------------- |
+| `title`      | Partial, case-insensitive match on the title                     |
+| `publisher`  | Partial, case-insensitive match on the publisher                 |
+| `authorName` | Partial, case-insensitive match on the author name (first match) |
+| `minPrice`   | Minimum price (inclusive)                                        |
+| `maxPrice`   | Maximum price (inclusive)                                        |
+
+Requests that match nothing return `200` with an empty list.
+
+### Users
+
+| Method | Route        | Description    |
+| ------ | ------------ | -------------- |
+| GET    | `/users`     | List users     |
+| GET    | `/users/:id` | Get user by ID |
+| POST   | `/users`     | Create user    |
+| PUT    | `/users/:id` | Update user    |
+| DELETE | `/users/:id` | Delete user    |
+
+Passwords are hashed with bcrypt before being saved (also when updated) and are never returned by the API. Creating a user with an e-mail that is already registered returns `400` with type `EMAIL_ALREADY_REGISTERED`.
+
+### Pagination and sorting
+
+The list routes (`GET /authors`, `GET /books`, `GET /books/query`, `GET /users`) accept these query parameters:
+
+```
+GET /books?page=2&limit=10&sortBy=price&order=desc
+```
+
+| Parameter | Default | Description                                   |
+| --------- | ------- | --------------------------------------------- |
+| `page`    | `1`     | Page number                                   |
+| `limit`   | `5`     | Items per page (maximum `100`)                |
+| `sortBy`  | `_id`   | Field to sort by. It must exist in the schema |
+| `order`   | `asc`   | `asc` or `desc`                               |
+
+Invalid `page` and `limit` values fall back to the defaults. An unknown `sortBy` or an `order` other than `asc`/`desc` returns `400`.
+
+## Getting started
+
 ## Technologies
 
 - Node.js (ES Modules)
@@ -14,12 +143,28 @@ The code is organized in layers: routes receive the request, controllers handle 
 - Node.js test runner (`node:test`) + Supertest
 - ESLint
 
-## Getting started
-
 ### Prerequisites
 
 - Node.js with `--env-file` support (v20.6 or newer)
 - A running MongoDB instance (local or hosted)
+
+## Project structure
+
+```
+server.js            # starts the HTTP server
+src/
+  app.js             # Express app: database connection, routes and error handlers
+  config/            # database connection
+  routes/            # endpoint definitions
+  controllers/       # request/response handling
+  services/          # business rules (duplicate checks, author lookup, ...)
+  models/            # Mongoose schemas
+  middlewares/       # pagination, not found and error handlers
+    errors/          # error classes (BaseError, BadRequestError, ...)
+  utils/             # pagination parsing
+test/                # integration and end-to-end tests
+  helpers/           # helpers shared by the e2e tests (create and clean up data)
+```
 
 ### Installation
 
@@ -45,113 +190,6 @@ The API listens on `PORT` (default `3000`).
 | `DB_NAME`              | Database name used by the connection        |
 
 `.env` and `.env.test` are ignored by git. Only `.env.example` is versioned.
-
-## Project structure
-
-```
-server.js            # starts the HTTP server
-src/
-  app.js             # Express app: database connection, routes and error handlers
-  config/            # database connection
-  routes/            # endpoint definitions
-  controllers/       # request/response handling
-  services/          # business rules (duplicate checks, author lookup, ...)
-  models/            # Mongoose schemas
-  middlewares/       # pagination, not found and error handlers
-    errors/          # error classes (BaseError, BadRequestError, ...)
-  utils/             # pagination parsing
-test/                # integration and end-to-end tests
-  helpers/           # helpers shared by the e2e tests (create and clean up data)
-```
-
-## API
-
-### Authors
-
-| Method | Route          | Description      |
-| ------ | -------------- | ---------------- |
-| GET    | `/authors`     | List authors     |
-| GET    | `/authors/:id` | Get author by ID |
-| POST   | `/authors`     | Create author    |
-| PUT    | `/authors/:id` | Update author    |
-| DELETE | `/authors/:id` | Delete author    |
-
-Author names are unique: creating an author with an existing name returns `400` with type `AUTHOR_NAME_ALREADY_EXISTS`.
-
-### Books
-
-| Method | Route          | Description              |
-| ------ | -------------- | ------------------------ |
-| GET    | `/books`       | List books               |
-| GET    | `/books/query` | Search books (see below) |
-| GET    | `/books/:id`   | Get book by ID           |
-| POST   | `/books`       | Create book              |
-| PUT    | `/books/:id`   | Update book              |
-| DELETE | `/books/:id`   | Delete book              |
-
-The `author` of a book must be the ID of an existing author, otherwise the API returns `400` with type `UNEXISTING_AUTHOR`.
-
-#### Searching books
-
-`GET /books/query` accepts these filters, which can be combined (a book must match all of them):
-
-| Parameter    | Description                                                      |
-| ------------ | ---------------------------------------------------------------- |
-| `title`      | Partial, case-insensitive match on the title                     |
-| `publisher`  | Partial, case-insensitive match on the publisher                 |
-| `authorName` | Partial, case-insensitive match on the author name (first match) |
-| `minPrice`   | Minimum price (inclusive)                                        |
-| `maxPrice`   | Maximum price (inclusive)                                        |
-
-The route also accepts the [pagination and sorting](#pagination-and-sorting) parameters.
-
-Requests that match nothing return `200` with an empty list. This includes:
-
-- an `authorName` that matches no author;
-- a request with no filters, or with only unknown parameters. It does **not** list all books: use `GET /books` for that.
-
-```
-GET /books/query?authorName=stan&minPrice=50&maxPrice=120
-```
-
-### Users
-
-| Method | Route        | Description    |
-| ------ | ------------ | -------------- |
-| GET    | `/users`     | List users     |
-| GET    | `/users/:id` | Get user by ID |
-| POST   | `/users`     | Create user    |
-| PUT    | `/users/:id` | Update user    |
-| DELETE | `/users/:id` | Delete user    |
-
-Passwords are hashed with bcrypt before being saved (also when updated) and are never returned by the API. Creating a user with an e-mail that is already registered returns `400` with type `EMAIL_ALREADY_REGISTERED`.
-
-### Pagination and sorting
-
-The list routes (`GET /authors`, `GET /books`, `GET /books/query`, `GET /users`) accept these query parameters:
-
-| Parameter | Default | Description                                   |
-| --------- | ------- | --------------------------------------------- |
-| `page`    | `1`     | Page number                                   |
-| `limit`   | `5`     | Items per page (maximum `100`)                |
-| `sortBy`  | `_id`   | Field to sort by. It must exist in the schema |
-| `order`   | `asc`   | `asc` or `desc`                               |
-
-Invalid `page` and `limit` values fall back to the defaults. An unknown `sortBy` or an `order` other than `asc`/`desc` returns `400`.
-
-```
-GET /books?page=2&limit=10&sortBy=price&order=desc
-```
-
-### Data models
-
-| Resource | Fields                                                                                              |
-| -------- | --------------------------------------------------------------------------------------------------- |
-| Author   | `name` (required, unique), `nationality`                                                            |
-| Book     | `title`, `author` (author ID), `publisher`, `price` (greater than 0), `pages` (1 to 5000, optional) |
-| User     | `name`, `email` (valid format, unique), `password`                                                  |
-
-Valid publishers: `HarperCollins`, `DC Comics` and `Marvel Comics`.
 
 ### Errors
 
@@ -189,7 +227,7 @@ The tests use the Node.js test runner and [Supertest](https://github.com/ladjs/s
 
 ### Setup
 
-The test scripts load their configuration from `.env.test`. Create it with the same variables as `.env`:
+The test scripts load their configuration from `.env.test`.
 
 ```bash
 cp .env.example .env.test
