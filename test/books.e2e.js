@@ -161,6 +161,53 @@ describe("Books query", () => {
       });
   });
 
+  test("query books by author", async () => {
+    const { author: author1 } = await create.author({
+      name: "Jonathan Hickman",
+      nationality: "United States of America",
+    });
+    
+    const { author: author2 } = await create.author({
+      name: "Greg Capullo",
+      nationality: "United States of America",
+    });
+
+    await create.book({
+      title: "Hulk",
+      author: author1._id,
+      publisher: "Marvel Comics",
+      price: 100,
+      pages: 100,
+    });
+
+    await create.book({
+      title: "Wolverine",
+      author: author1._id,
+      publisher: "Marvel Comics",
+      price: 120,
+      pages: 80,
+    });
+
+    await create.book({
+      title: "Thor: Ragnarok",
+      author: author2._id,
+      publisher: "Marvel Comics",
+      price: 90,
+      pages: 96,
+    });
+
+    await request(app)
+      .get(`/books/query?authorName=${author1.name}`)
+      .expect(200)
+      .expect((response) => {
+        const reqTitles = ["Hulk", "Wolverine"];
+        const resTitles = response.body.map((book) => book.title);
+
+        assert.strictEqual(resTitles.length, reqTitles.length);
+        assert.deepStrictEqual(resTitles.sort(), reqTitles.sort());
+      });
+  });
+
   test("query books by publisher", async () => {
     const { author } = await create.author({
       name: "Frank Miller",
@@ -193,6 +240,45 @@ describe("Books query", () => {
         assert.strictEqual(resTitles.length, reqTitles.length);
         assert.deepStrictEqual(resTitles.sort(), reqTitles.sort());
         
+      });
+  });
+
+  test("query books by price", async () => {
+    const { author } = await create.author({
+      name: "John Romita Jr",
+      nationality: "United States of America",
+    });
+
+    await create.book({
+      title: "Superman",
+      author: author._id,
+      publisher: "DC Comics",
+      price: 50,
+      pages: 200,
+    });
+
+    await create.book({
+      title: "Dare Devil",
+      author: author._id,
+      publisher: "Marvel Comics",
+      price: 90,
+      pages: 160,
+    });
+
+    await create.book({
+      title: "Avengers",
+      author: author._id,
+      publisher: "Marvel Comics",
+      price: 150,
+      pages: 480,
+    });
+
+    await request(app)
+      .get("/books/query?authorName=John Romita Jr&minPrice=90&maxPrice=140")
+      .expect(200)
+      .expect((response) => {
+        assert.strictEqual(response.body.length, 1);
+        assert.strictEqual(response.body[0].title, "Dare Devil");
       });
   });
 });
