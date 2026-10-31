@@ -124,3 +124,75 @@ describe("Books Routes", () => {
       });
   });
 });
+
+describe("Books query", () => {
+  after(async () => {
+    await create.cleanup();
+    await mongoose.disconnect();
+  });
+  
+  test("query books by title", async () => {
+    const { author } = await create.author({
+      name: "Stan Lee",
+      nationality: "United States of America",
+    });
+
+    await create.book({
+      title: "Spider-man",
+      author: author._id,
+      publisher: "Marvel Comics",
+      price: 100,
+      pages: 100,
+    });
+
+    await create.book({
+      title: "Iron Man",
+      author: author._id,
+      publisher: "Marvel Comics",
+      price: 120,
+      pages: 80,
+    });
+
+    await request(app)
+      .get("/books/query?title=Iron Man")
+      .expect(200)
+      .expect((response) => {
+        assert.strictEqual(response.body[0].title, "Iron Man");
+      });
+  });
+
+  test("query books by publisher", async () => {
+    const { author } = await create.author({
+      name: "Frank Miller",
+      nationality: "United States of America",
+    });
+
+    await create.book({
+      title: "Batman: Year One",
+      author: author._id,
+      publisher: "DC Comics",
+      price: 100,
+      pages: 100,
+    });
+    
+    await create.book({
+      title: "Dark Knight",
+      author: author._id,
+      publisher: "DC Comics",
+      price: 120,
+      pages: 80,
+    });
+
+    await request(app)
+      .get("/books/query?publisher=DC Comics")
+      .expect(200)
+      .expect((response) => {
+        const reqTitles = ["Batman: Year One", "Dark Knight"];
+        const resTitles = response.body.map((book) => book.title);
+
+        assert.strictEqual(resTitles.length, reqTitles.length);
+        assert.deepStrictEqual(resTitles.sort(), reqTitles.sort());
+        
+      });
+  });
+});
