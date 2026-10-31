@@ -54,12 +54,12 @@ class BooksService {
       if (author !== null) {
         query.author = author._id;
       } else {
-        query = null;
+        query.author = null;
       }
+    }
 
-      if (Object.values(query).length === 0) {
-        query = null;
-      }
+    if (Object.values(query).length === 0) {
+      query._id = null;
     }
 
     return query;
