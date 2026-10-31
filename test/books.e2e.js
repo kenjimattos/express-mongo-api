@@ -161,6 +161,15 @@ describe("Books query", () => {
       });
   });
 
+  test("query books by unexisting title", async () => {
+    await request(app)
+      .get("/books/query?title=Unknown Title")
+      .expect(200)
+      .expect((response) => {
+        assert.strictEqual(response.body.length, 0);
+      });
+  });
+  
   test("query books by author", async () => {
     const { author: author1 } = await create.author({
       name: "Jonathan Hickman",
@@ -208,6 +217,15 @@ describe("Books query", () => {
       });
   });
 
+  test("query books by unexisting author", async () => {
+    await request(app)
+      .get("/books/query?authorName=Unknown Author")
+      .expect(200)
+      .expect((response) => {
+        assert.strictEqual(response.body.length, 0);
+      });
+  });
+  
   test("query books by publisher", async () => {
     const { author } = await create.author({
       name: "Frank Miller",
@@ -240,6 +258,24 @@ describe("Books query", () => {
         assert.strictEqual(resTitles.length, reqTitles.length);
         assert.deepStrictEqual(resTitles.sort(), reqTitles.sort());
         
+      });
+  });
+
+  test("query books by unexisting publisher", async () => {
+    await request(app)
+      .get("/books/query?publisher=Unknown Publisher")
+      .expect(200)
+      .expect((response) => {
+        assert.strictEqual(response.body.length, 0);
+      });
+  });
+
+  test("query books by unexisting parameter", async () => {
+    await request(app)
+      .get("/books/query?unknownParam=value")
+      .expect(200)
+      .expect((response) => {
+        assert.strictEqual(response.body.length, 0);
       });
   });
 
@@ -281,4 +317,5 @@ describe("Books query", () => {
         assert.strictEqual(response.body[0].title, "Dare Devil");
       });
   });
+
 });
