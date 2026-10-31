@@ -7,6 +7,10 @@ import assert from "node:assert";
 
 const authorsService = new AuthorsService();
 
+after(async () => {
+  await mongoose.disconnect();
+});
+
 describe("Authors Integration", () => {
   before(async () => {
     await connectDatabase();
@@ -20,7 +24,6 @@ describe("Authors Integration", () => {
     await mongoose.connection
       .collection("authors")
       .deleteMany({ name: "Steve Dikto" });
-    await mongoose.disconnect();
   });
 
   test("create author with existing name", async () => {

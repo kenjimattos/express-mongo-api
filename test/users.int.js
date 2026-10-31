@@ -9,12 +9,18 @@ import assert from "node:assert";
 
 const usersService = new UsersService();
 
+before(async () => {
+  await connectDatabase();
+});
+
+after(async () => {
+  await mongoose.disconnect();
+});
+
 describe("Users Integration", () => {
   let user;
 
   before(async () => {
-    await connectDatabase();
-
     user = await usersService.createUser({
       name: "John Doe",
       email: "johndoe@example.com",
@@ -26,7 +32,6 @@ describe("Users Integration", () => {
     await mongoose.connection
       .collection("users")
       .deleteMany({ email: "johndoe@example.com" });
-    await mongoose.disconnect();
   });
 
   test("create user with existing e-mail", async () => {

@@ -7,10 +7,13 @@ import CreateHelper from "./helpers/createHelper.js";
 
 const create = new CreateHelper(app);
 
+after(async () => {
+  await mongoose.disconnect();
+});
+
 describe("Authors Routes", () => {
   after(async () => {
     await create.cleanup();
-    await mongoose.disconnect();
   });
 
   test("create a new author", async () => {

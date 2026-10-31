@@ -7,10 +7,13 @@ import CreateHelper from "./helpers/createHelper.js";
 
 const create = new CreateHelper(app);
 
+after(async () => {
+  await mongoose.disconnect();
+});
+
 describe("Books Routes", () => {
   after(async () => {
     await create.cleanup();
-    await mongoose.disconnect();
   });
 
   test("create a new book", async () => {
@@ -128,7 +131,6 @@ describe("Books Routes", () => {
 describe("Books query", () => {
   after(async () => {
     await create.cleanup();
-    await mongoose.disconnect();
   });
   
   test("query books by title", async () => {

@@ -7,15 +7,15 @@ import assert from "node:assert";
 
 const booksService = new BooksService();
 
+before(async () => {
+  await connectDatabase();
+});
+
+after(async () => {
+  await mongoose.disconnect();
+});
+
 describe("Books Integration", () => {
-  before(async () => {
-    await connectDatabase();
-  });
-
-  after(async () => {
-    await mongoose.disconnect();
-  });
-
   test("create book with unexisting author", async () => {
     await assert.rejects(
       booksService.createBook({
