@@ -38,7 +38,9 @@ erDiagram
     SALES {
         ObjectId _id PK
         ObjectId user FK "required, ref users"
-        number total
+        number subtotal
+        number discount "optional"
+        number total "subtotal * discount"
         string payment_type "enum"
         SALES_ITEMS items "embedded, 1 or more"
         date created_at
@@ -58,7 +60,7 @@ erDiagram
 | Book     | `title`, `author` (author ID), `publisher`, `price` (greater than 0), `pages` (1 to 5000, optional) |
 | Publisher     | ENUMs `HarperCollins`, `DC Comics` and `Marvel Comics` |
 | User     | `name`, `email` (valid format, unique), `password`                                                  |
-| Sale     | `user` (user ID), `items` (`book`, `price`, `quantity`), `total`, `payment_type`, `created_at`              |
+| Sale     | `user` (user ID), `items` (`book`, `price`, `quantity`), `subtotal`, `discount`, `total`, `payment_type`, `created_at`              |
 
 
 ## API
