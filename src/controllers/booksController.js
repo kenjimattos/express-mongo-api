@@ -77,9 +77,9 @@ class BooksController {
 
   static async queryBooks(req, res, next) {
     try {
-      const queriedBooks = booksService.queryBooks(req);
+      const processedQuery = await booksService.processQuery(req.query);
 
-      req.result = queriedBooks;
+      req.result = booksService.queryBooks(processedQuery);
       next();
     } catch (error) {
       next(error);

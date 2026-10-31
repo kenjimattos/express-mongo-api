@@ -32,45 +32,42 @@ class BooksService {
     return bookModel.findByIdAndDelete(id);
   }
 
-  async queryBooks(query) {
-    const processedQuery = await processQuery(query);
+  async processQuery(queryParams) {
+    const { publisher, title, minPrice, maxPrice, authorName } = queryParams;
 
+    let query = {};
+
+    if (publisher) query.publisher = { $regex: publisher, $options: "i" };
+    if (title) query.title = { $regex: title, $options: "i" };
+
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = parseFloat(minPrice);
+      if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+    }
+
+    if (authorName) {
+      const author = await authorModel.findOne({
+        name: { $regex: authorName, $options: "i" },
+      });
+
+      if (author !== null) {
+        query.author = author._id;
+      } else {
+        query = null;
+      }
+
+      if (Object.values(query).length === 0) {
+        query = null;
+      }
+    }
+
+    return query;
+  }
+
+  queryBooks(processedQuery) {
     return bookModel.find(processedQuery).populate("author");
   }
-}
-
-
-async function processQuery(queryParams) {
-  const { publisher, title, minPrice, maxPrice, authorName } = queryParams;
-
-  let query = {};
-
-  if (publisher) query.publisher = { $regex: publisher, $options: "i" };
-  if (title) query.title = { $regex: title, $options: "i" };
-
-  if (minPrice || maxPrice) {
-    query.price = {};
-    if (minPrice) query.price.$gte = parseFloat(minPrice);
-    if (maxPrice) query.price.$lte = parseFloat(maxPrice);
-  }
-
-  if (authorName) {
-    const author = await authorModel.findOne({
-      name: { $regex: authorName, $options: "i" },
-    });
-
-    if (author !== null) {
-      query.author = author._id;
-    } else {
-      query = null;
-    }
-  }
-
-  if (Object.values(query).length === 0) {
-    query = null;
-  }
-
-  return query;
 }
 
 export default BooksService;
