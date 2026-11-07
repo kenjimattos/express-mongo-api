@@ -65,7 +65,7 @@ erDiagram
 | -------- | --------------------------------------------------------------------------------------------------- |
 | Author   | `name` (required, unique), `nationality`                                                            |
 | Book     | `title`, `author` (author ID), `publisher`, `price` (greater than 0), `pages` (1 to 5000, optional) |
-| Publisher     | ENUMs `HarperCollins`, `DC Comics` and `Marvel Comics` |
+| Publisher | ENUMs `Principis`, `HarperCollins`, `DC Comics` and `Marvel Comics`, defined in `src/config/publishers.js` |
 | User     | `name`, `email` (valid format, unique), `password`                                                  |
 | Sale     | `user` (user ID), `items` (`book`, `price`, `quantity`), `payment_type`, `subtotal`, `discount`, `total` |
 | Payment type | ENUMs `credit`, `debit`, `pix` and `boleto` |
@@ -187,7 +187,7 @@ Invalid `page` and `limit` values fall back to the defaults. An unknown `sortBy`
 server.js            # starts the HTTP server
 src/
   app.js             # Express app: database connection, routes and error handlers
-  config/            # database connection and payment discounts
+  config/            # database connection, payment discounts and publishers
   routes/            # endpoint definitions
   controllers/       # request/response handling
   services/          # business rules (duplicate checks, author lookup, sale calculation, ...)

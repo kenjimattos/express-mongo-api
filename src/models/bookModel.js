@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { PUBLISHERS } from "../config/publishers.js";
 
 const bookSchema = new mongoose.Schema(
   {
@@ -15,7 +16,7 @@ const bookSchema = new mongoose.Schema(
       type: String,
       required: [true, "Book publisher is required"],
       enum: {
-        values: ["HarperCollins", "DC Comics", "Marvel Comics"],
+        values: PUBLISHERS,
         message: "{VALUE} isn't a valid publisher name",
       },
     },
