@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     versionKey: false,
+    timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
     toJSON: {
       transform: (_doc, ret) => {
         delete ret.password;

@@ -39,7 +39,10 @@ const bookSchema = new mongoose.Schema(
       }
     },
   },
-  { versionKey: false },
+  {
+    versionKey: false,
+    timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
+  },
 );
 
 const bookModel = mongoose.model("book", bookSchema);

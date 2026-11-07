@@ -17,6 +17,8 @@ erDiagram
         ObjectId _id PK
         string name "required, unique"
         string nationality
+        date created_at "automatic"
+        date updated_at "automatic"
     }
 
     BOOKS {
@@ -26,6 +28,8 @@ erDiagram
         string publisher "required, enum"
         number price "required, > 0"
         number pages "1 to 5000"
+        date created_at "automatic"
+        date updated_at "automatic"
     }
 
     USERS {
@@ -33,6 +37,8 @@ erDiagram
         string name "required"
         string email "required, unique"
         string password "required, bcrypt hash"
+        date created_at "automatic"
+        date updated_at "automatic"
     }
 
     SALES {
@@ -43,6 +49,8 @@ erDiagram
         number subtotal "calculated, sum of price * quantity"
         number discount "calculated, subtotal * payment rate"
         number total "calculated, subtotal - discount"
+        date created_at "automatic"
+        date updated_at "automatic"
     }
 
     SALES_ITEMS {
@@ -61,6 +69,8 @@ erDiagram
 | User     | `name`, `email` (valid format, unique), `password`                                                  |
 | Sale     | `user` (user ID), `items` (`book`, `price`, `quantity`), `payment_type`, `subtotal`, `discount`, `total` |
 | Payment type | ENUMs `credit`, `debit`, `pix` and `boleto` |
+
+Every resource also has `created_at` and `updated_at`. Mongoose sets them automatically (the `timestamps` schema option), so clients don't send them. `updated_at` changes on every update. Records saved before these fields were added don't have them.
 
 ### Sale rules
 
@@ -149,7 +159,7 @@ GET /books?page=2&limit=10&sortBy=price&order=desc
 | --------- | ------- | --------------------------------------------- |
 | `page`    | `1`     | Page number                                   |
 | `limit`   | `5`     | Items per page (maximum `100`)                |
-| `sortBy`  | `_id`   | Field to sort by. It must exist in the schema |
+| `sortBy`  | `_id`   | Field to sort by. It must exist in the schema (`created_at` and `updated_at` included) |
 | `order`   | `asc`   | `asc` or `desc`                               |
 
 Invalid `page` and `limit` values fall back to the defaults. An unknown `sortBy` or an `order` other than `asc`/`desc` returns `400`.
