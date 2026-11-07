@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --env-file=.env server.js",
-    "test": "node --env-file=.env.test --test 'test/*.js'",
+    "test": "node --env-file=.env.test --test 'test/*.js' 'test/unit/*.js'",
+    "test:unit": "node --test 'test/unit/*.js'",
     "test:e2e": "node --env-file=.env.test --test 'test/*.e2e.js'",
     "test:int": "node --env-file=.env.test --test 'test/*.int.js'",
     "lint": "npx eslint"

@@ -1,6 +1,6 @@
 # express-mongo-api
 
-Bookstore REST API built with Node.js, Express and MongoDB (Mongoose), providing CRUD for authors, books and users.
+Bookstore REST API built with Node.js, Express and MongoDB (Mongoose), providing CRUD for authors, books and users, and book sales with payment discounts.
 
 The code is organized in layers: routes receive the request, controllers handle HTTP, services hold the business rules and Mongoose models talk to the database. As a REST API, the "view" is the JSON response.
 
@@ -38,18 +38,17 @@ erDiagram
     SALES {
         ObjectId _id PK
         ObjectId user FK "required, ref users"
-        number subtotal
-        number discount "optional"
-        number total "subtotal * discount"
-        string payment_type "enum"
         SALES_ITEMS items "embedded, 1 or more"
-        date created_at
+        string payment_type "required, enum"
+        number subtotal "calculated, sum of price * quantity"
+        number discount "calculated, subtotal * payment rate"
+        number total "calculated, subtotal - discount"
     }
 
     SALES_ITEMS {
       ObjectId book FK "required, ref books"
-      number price "populated from books, required, > 0"
-      number quantity "required, >= 1"
+      number price "copied from books, required, > 0"
+      number quantity "required, integer >= 1"
     }
 ```
 ### Data models
@@ -60,8 +59,30 @@ erDiagram
 | Book     | `title`, `author` (author ID), `publisher`, `price` (greater than 0), `pages` (1 to 5000, optional) |
 | Publisher     | ENUMs `HarperCollins`, `DC Comics` and `Marvel Comics` |
 | User     | `name`, `email` (valid format, unique), `password`                                                  |
-| Sale     | `user` (user ID), `items` (`book`, `price`, `quantity`), `subtotal`, `discount`, `total`, `payment_type`, `created_at`              |
+| Sale     | `user` (user ID), `items` (`book`, `price`, `quantity`), `payment_type`, `subtotal`, `discount`, `total` |
+| Payment type | ENUMs `credit`, `debit`, `pix` and `boleto` |
 
+### Sale rules
+
+The client sends only `user`, `payment_type` and `items` (`book` and `quantity`). The service fills in everything else:
+
+- Each item's `price` is copied from the book at the time of the sale, so later price changes do not affect past sales.
+- `subtotal` is the sum of `price × quantity` over all items.
+- `discount` is `subtotal` times the rate of the payment type, and `total` is `subtotal − discount`.
+- `subtotal`, `discount` and `total` are rounded to 2 decimal places.
+- `price`, `subtotal`, `discount` and `total` sent by the client are ignored.
+- If any book does not exist, the whole sale is rejected and nothing is saved.
+
+The rates are defined in `src/config/paymentTypes.js`, which is also the source of the `payment_type` enum:
+
+| Payment type | Discount |
+| ------------ | -------- |
+| `credit`     | 0%       |
+| `debit`      | 0%       |
+| `pix`        | 5%       |
+| `boleto`     | 3%       |
+
+Sales are not exposed through HTTP routes yet: the rules above live in `src/services/salesService.js`.
 
 ## API
 
@@ -135,7 +156,7 @@ Invalid `page` and `limit` values fall back to the defaults. An unknown `sortBy`
 
 ## Getting started
 
-## Technologies
+### Technologies
 
 - Node.js (ES Modules)
 - Express 5
@@ -156,15 +177,16 @@ Invalid `page` and `limit` values fall back to the defaults. An unknown `sortBy`
 server.js            # starts the HTTP server
 src/
   app.js             # Express app: database connection, routes and error handlers
-  config/            # database connection
+  config/            # database connection and payment discounts
   routes/            # endpoint definitions
   controllers/       # request/response handling
-  services/          # business rules (duplicate checks, author lookup, ...)
+  services/          # business rules (duplicate checks, author lookup, sale calculation, ...)
   models/            # Mongoose schemas
   middlewares/       # pagination, not found and error handlers
     errors/          # error classes (BaseError, BadRequestError, ...)
   utils/             # pagination parsing
 test/                # integration and end-to-end tests
+  unit/              # unit tests for pure functions (no database)
   helpers/           # helpers shared by the e2e tests (create and clean up data)
 ```
 
@@ -214,6 +236,11 @@ Clients should rely on `status` and `type`. The `message` is meant for people an
 | `AUTHOR_NAME_ALREADY_EXISTS` | 400    | Author name is already taken                  |
 | `EMAIL_ALREADY_REGISTERED`   | 400    | User e-mail is already registered             |
 | `UNEXISTING_AUTHOR`          | 400    | Book references an author that does not exist |
+| `INVALID_DATA`               | 400    | Sale payload is not an object                 |
+| `INVALID_ITEMS`              | 400    | Sale `items` is not an array, or an item has no `book` |
+| `INVALID_QUANTITY`           | 400    | Sale item `quantity` is not an integer of at least 1 |
+| `UNEXISTING_USER`            | 400    | Sale references a user that does not exist    |
+| `UNEXISTING_BOOK`            | 400    | Sale references a book that does not exist    |
 | `NOT_FOUND`                  | 404    | Resource or route not found                   |
 | `INTERNAL_SERVER_ERROR`      | 500    | Unexpected error                              |
 
@@ -221,15 +248,16 @@ Clients should rely on `status` and `type`. The `message` is meant for people an
 
 The tests use the Node.js test runner and [Supertest](https://github.com/ladjs/supertest). There are no mocks: they run against a real MongoDB.
 
-| Script             | What it runs                        |
-| ------------------ | ----------------------------------- |
-| `npm test`         | All tests                           |
-| `npm run test:int` | Integration tests (`test/*.int.js`) |
-| `npm run test:e2e` | End-to-end tests (`test/*.e2e.js`)  |
+| Script              | What it runs                              |
+| ------------------- | ----------------------------------------- |
+| `npm test`          | All tests                                 |
+| `npm run test:unit` | Unit tests (`test/unit/*.unit.js`)        |
+| `npm run test:int`  | Integration tests (`test/*.int.js`)       |
+| `npm run test:e2e`  | End-to-end tests (`test/*.e2e.js`)        |
 
 ### Setup
 
-The test scripts load their configuration from `.env.test`.
+The integration and end-to-end scripts load their configuration from `.env.test`. Unit tests do not use the database and need no configuration.
 
 ```bash
 cp .env.example .env.test
@@ -240,7 +268,8 @@ cp .env.example .env.test
 ### Test types
 
 - **End-to-end** (`test/*.e2e.js`): call the HTTP routes through `app` with Supertest and check status codes, response bodies and error `type`. They also cover `GET /books/query` (title, author, publisher, price range and searches with no results). Bugs between the controller and the service, such as passing the wrong object, only show up at this level.
-- **Integration** (`test/*.int.js`): call the services directly against the database to check business rules, such as duplicate author names, duplicate e-mails, books with an unexisting author and password hashing on update.
+- **Integration** (`test/*.int.js`): call the services directly against the database to check business rules, such as duplicate author names, duplicate e-mails, books with an unexisting author, password hashing on update, and sales (unexisting user or book, a sale rejected as a whole, price copied from the book, discounts and rounding).
+- **Unit** (`test/unit/*.unit.js`): call pure functions without the database, such as the sale payload validation (`validateData`) and rounding (`round`).
 
 ### Conventions
 
@@ -248,6 +277,7 @@ cp .env.example .env.test
 - Tests clean up after themselves (`DELETE` requests or `deleteMany` in the `after` hook).
 - The Mongoose connection is shared by the whole test file. Call `mongoose.disconnect()` in a single file-level `after` (outside any `describe`) and keep only the data cleanup in each `describe`. Disconnecting inside a `describe` breaks the ones that run after it, and the failures look like `Cannot read properties of undefined` or `500` responses. They only show up when the whole file runs, not when you filter with `--test-name-pattern`.
 - Error assertions check `status` and `type`, not the `message`, so reworded messages do not break the tests.
+- Test files run in parallel against the same database. Author names, e-mails and `deleteMany` filters must be unique to each file, or one file can hit a duplicate name or delete another file's data. Book titles are not unique, but avoid titles and author names that match the partial-text searches in `test/books.e2e.js`.
 - Fixed names and e-mails are used per test. If a run is interrupted before cleanup, leftover records can make the next run fail with `400` (duplicate name or e-mail). Remove them from the test database and run again.
 
 ## Linting
