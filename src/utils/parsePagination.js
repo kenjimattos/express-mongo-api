@@ -6,7 +6,7 @@ const ORDERS = ["asc", "desc"];
 
 export default function parsePagination(query, schema) {
   const sortBy = query.sortBy ?? "_id";
-  const order = query.order ?? "asc";
+  const order = query.order ?? "desc";
   
   if (!ORDERS.includes(order)) {
     throw new BadRequestError("Order must be asc or desc");

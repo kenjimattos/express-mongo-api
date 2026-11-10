@@ -160,7 +160,9 @@ GET /books?page=2&limit=10&sortBy=price&order=desc
 | `page`    | `1`     | Page number                                   |
 | `limit`   | `5`     | Items per page (maximum `100`)                |
 | `sortBy`  | `_id`   | Field to sort by. It must exist in the schema (`created_at` and `updated_at` included) |
-| `order`   | `asc`   | `asc` or `desc`                               |
+| `order`   | `desc`  | `asc` or `desc`                               |
+
+By default the lists come newest first, since `_id` starts with the creation timestamp.
 
 Invalid `page` and `limit` values fall back to the defaults. An unknown `sortBy` or an `order` other than `asc`/`desc` returns `400`.
 
