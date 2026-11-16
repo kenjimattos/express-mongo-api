@@ -87,7 +87,12 @@ class SalesService {
 }
 
 export function validateData(payload) {
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    Array.isArray(payload) ||
+    Object.keys(payload).length === 0
+  ) {
     throw new BadRequestError(
       "Can't create sale: invalid data provided.",
       "INVALID_DATA",

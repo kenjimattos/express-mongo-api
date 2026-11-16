@@ -40,6 +40,16 @@ describe("Validate sales payloads", () => {
         return true;
       },
     );
+
+    assert.throws(
+      () => validateData({}),
+      (error) => {
+        assert.ok(error instanceof BadRequestError);
+        assert.strictEqual(error.status, 400);
+        assert.strictEqual(error.type, "INVALID_DATA");
+        return true;
+      },
+    );
   });
 
   test("invalid items: no book", () => {
