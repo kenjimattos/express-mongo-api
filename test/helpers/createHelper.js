@@ -25,6 +25,10 @@ class CreateHelper {
     return this.create("/users", "user", data);
   }
 
+  sale(data) {
+    return this.create("/sales", "sale", data);
+  }
+
   async cleanup() {
     const urls = this.created.reverse();
     this.created = [];
