@@ -79,7 +79,10 @@ class SalesService {
         "MISSING_SALE_ID",
       );
     }
-    return saleModel.findByIdAndDelete(id);
+    return saleModel
+      .findByIdAndDelete(id)
+      .populate("user", "name email")
+      .populate("items.book", "title");
   }
 }
 
