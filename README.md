@@ -92,7 +92,7 @@ The rates are defined in `src/config/paymentTypes.js`, which is also the source 
 | `pix`        | 5%       |
 | `boleto`     | 3%       |
 
-Sales are not exposed through HTTP routes yet: the rules above live in `src/services/salesService.js`.
+The rules above live in `src/services/salesService.js`.
 
 ## API
 
@@ -147,9 +147,32 @@ Requests that match nothing return `200` with an empty list.
 
 Passwords are hashed with bcrypt before being saved (also when updated) and are never returned by the API. Creating a user with an e-mail that is already registered returns `400` with type `EMAIL_ALREADY_REGISTERED`.
 
+### Sales
+
+| Method | Route         | Description    |
+| ------ | ------------- | -------------- |
+| GET    | `/sales`      | List sales     |
+| GET    | `/sales/:id`  | Get sale by ID |
+| POST   | `/sales`      | Create sale    |
+| DELETE | `/sales/:id`  | Delete sale    |
+
+Sales can't be edited, so there is no `PUT`. To create a sale, send only the fields described in [Sale rules](#sale-rules):
+
+```json
+{
+  "user": "<user ID>",
+  "payment_type": "pix",
+  "items": [{ "book": "<book ID>", "quantity": 2 }]
+}
+```
+
+`price`, `subtotal`, `discount` and `total` are calculated by the API and ignored if sent.
+
+`POST` and `DELETE` return `201` with `{ "message": "...", "sale": { ... } }`. In the list, in `GET /sales/:id` and in the deleted sale, `user` comes with its `name` and `email` and each item's `book` comes with its `title`, instead of only the IDs.
+
 ### Pagination and sorting
 
-The list routes (`GET /authors`, `GET /books`, `GET /books/query`, `GET /users`) accept these query parameters:
+The list routes (`GET /authors`, `GET /books`, `GET /books/query`, `GET /users`, `GET /sales`) accept these query parameters:
 
 ```
 GET /books?page=2&limit=10&sortBy=price&order=desc
@@ -248,7 +271,7 @@ Clients should rely on `status` and `type`. The `message` is meant for people an
 | `AUTHOR_NAME_ALREADY_EXISTS` | 400    | Author name is already taken                  |
 | `EMAIL_ALREADY_REGISTERED`   | 400    | User e-mail is already registered             |
 | `UNEXISTING_AUTHOR`          | 400    | Book references an author that does not exist |
-| `INVALID_DATA`               | 400    | Sale payload is not an object                 |
+| `INVALID_DATA`               | 400    | Sale payload is not an object, or is empty    |
 | `INVALID_ITEMS`              | 400    | Sale `items` is not an array, or an item has no `book` |
 | `INVALID_QUANTITY`           | 400    | Sale item `quantity` is not an integer of at least 1 |
 | `UNEXISTING_USER`            | 400    | Sale references a user that does not exist    |
@@ -279,7 +302,7 @@ cp .env.example .env.test
 
 ### Test types
 
-- **End-to-end** (`test/*.e2e.js`): call the HTTP routes through `app` with Supertest and check status codes, response bodies and error `type`. They also cover `GET /books/query` (title, author, publisher, price range and searches with no results). Bugs between the controller and the service, such as passing the wrong object, only show up at this level.
+- **End-to-end** (`test/*.e2e.js`): call the HTTP routes through `app` with Supertest and check status codes, response bodies and error `type`. They also cover `GET /books/query` (title, author, publisher, price range and searches with no results) and the sales routes (calculated values, invalid payloads, unexisting user or book, populated `user` and `book`, and `404`/`400` for unknown or malformed IDs). Bugs between the controller and the service, such as passing the wrong object, only show up at this level.
 - **Integration** (`test/*.int.js`): call the services directly against the database to check business rules, such as duplicate author names, duplicate e-mails, books with an unexisting author, password hashing on update, and sales (unexisting user or book, a sale rejected as a whole, price copied from the book, discounts and rounding).
 - **Unit** (`test/unit/*.unit.js`): call pure functions without the database, such as the sale payload validation (`validateData`) and rounding (`round`).
 
