@@ -286,9 +286,9 @@ The tests use the Node.js test runner and [Supertest](https://github.com/ladjs/s
 | Script              | What it runs                              |
 | ------------------- | ----------------------------------------- |
 | `npm test`          | All tests                                 |
-| `npm run test:unit` | Unit tests (`test/unit/*.unit.js`)        |
-| `npm run test:int`  | Integration tests (`test/*.int.js`)       |
-| `npm run test:e2e`  | End-to-end tests (`test/*.e2e.js`)        |
+| `npm run test:unit` | Unit tests (`test/unit/*.js`)        |
+| `npm run test:int`  | Integration tests (`test/int/*.js`)       |
+| `npm run test:e2e`  | End-to-end tests (`test/e2e/*.js`)        |
 
 ### Setup
 
@@ -302,8 +302,8 @@ cp .env.example .env.test
 
 ### Test types
 
-- **End-to-end** (`test/*.e2e.js`): call the HTTP routes through `app` with Supertest and check status codes, response bodies and error `type`. They also cover `GET /books/query` (title, author, publisher, price range and searches with no results) and the sales routes (calculated values, invalid payloads, unexisting user or book, populated `user` and `book`, and `404`/`400` for unknown or malformed IDs). Bugs between the controller and the service, such as passing the wrong object, only show up at this level.
-- **Integration** (`test/*.int.js`): call the services directly against the database to check business rules, such as duplicate author names, duplicate e-mails, books with an unexisting author, password hashing on update, and sales (unexisting user or book, a sale rejected as a whole, price copied from the book, discounts and rounding).
+- **End-to-end** (`test/e2e/*.e2e.js`): call the HTTP routes through `app` with Supertest and check status codes, response bodies and error `type`. They also cover `GET /books/query` (title, author, publisher, price range and searches with no results) and the sales routes (calculated values, invalid payloads, unexisting user or book, populated `user` and `book`, and `404`/`400` for unknown or malformed IDs). Bugs between the controller and the service, such as passing the wrong object, only show up at this level.
+- **Integration** (`test/int/*.int.js`): call the services directly against the database to check business rules, such as duplicate author names, duplicate e-mails, books with an unexisting author, password hashing on update, and sales (unexisting user or book, a sale rejected as a whole, price copied from the book, discounts and rounding).
 - **Unit** (`test/unit/*.unit.js`): call pure functions without the database, such as the sale payload validation (`validateData`) and rounding (`round`).
 
 ### Conventions
