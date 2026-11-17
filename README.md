@@ -187,7 +187,7 @@ GET /books?page=2&limit=10&sortBy=price&order=desc
 
 By default the lists come newest first, since `_id` starts with the creation timestamp.
 
-Invalid `page` and `limit` values fall back to the defaults. An unknown `sortBy` or an `order` other than `asc`/`desc` returns `400`.
+Non-numeric values and `limit=0` fall back to the defaults. Negative values and `page=0` are clamped to `1`, and `limit` is capped at `100`. An unknown `sortBy` or an `order` other than `asc`/`desc` returns `400`.
 
 ## Getting started
 
