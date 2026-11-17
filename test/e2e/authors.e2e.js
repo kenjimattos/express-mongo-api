@@ -1,9 +1,9 @@
 import { describe, test, after } from "node:test";
 import mongoose from "mongoose";
 import request from "supertest";
-import app from "../src/app.js";
+import app from "../../src/app.js";
 import assert from "node:assert";
-import CreateHelper from "./helpers/createHelper.js";
+import CreateHelper from "../helpers/createHelper.js";
 
 const create = new CreateHelper(app);
 

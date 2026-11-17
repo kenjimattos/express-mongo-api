@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import connectDatabase from "../src/config/dbConnect.js";
-import UsersService from "../src/services/usersService.js";
-import { userModel } from "../src/models/index.js";
-import BadRequestError from "../src/middlewares/errors/badRequestError.js";
+import connectDatabase from "../../src/config/dbConnect.js";
+import UsersService from "../../src/services/usersService.js";
+import { userModel } from "../../src/models/index.js";
+import BadRequestError from "../../src/middlewares/errors/badRequestError.js";
 import { describe, test, before, after } from "node:test";
 import assert from "node:assert";
 

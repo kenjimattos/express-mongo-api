@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import connectDatabase from "../src/config/dbConnect.js";
-import AuthorsService from "../src/services/authorsService.js";
-import BadRequestError from "../src/middlewares/errors/badRequestError.js";
+import connectDatabase from "../../src/config/dbConnect.js";
+import AuthorsService from "../../src/services/authorsService.js";
+import BadRequestError from "../../src/middlewares/errors/badRequestError.js";
 import { describe, test, before, after } from "node:test";
 import assert from "node:assert";
 

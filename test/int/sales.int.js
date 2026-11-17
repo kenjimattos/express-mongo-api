@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
-import connectDatabase from "../src/config/dbConnect.js";
-import AuthorsService from "../src/services/authorsService.js";
-import BooksService from "../src/services/booksService.js";
-import SalesService from "../src/services/salesService.js";
-import UsersService from "../src/services/usersService.js";
-import { saleModel } from "../src/models/index.js";
-import BadRequestError from "../src/middlewares/errors/badRequestError.js";
+import connectDatabase from "../../src/config/dbConnect.js";
+import AuthorsService from "../../src/services/authorsService.js";
+import BooksService from "../../src/services/booksService.js";
+import SalesService from "../../src/services/salesService.js";
+import UsersService from "../../src/services/usersService.js";
+import { saleModel } from "../../src/models/index.js";
+import BadRequestError from "../../src/middlewares/errors/badRequestError.js";
 import { describe, test, before, after } from "node:test";
 import assert from "node:assert";
 
