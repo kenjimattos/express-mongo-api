@@ -1,14 +1,18 @@
 import express from "express";
 import AuthorsController from "../controllers/authorsController.js";
+import AuthorsService from "../services/authorsService.js";
 import pagination from "../middlewares/pagination.js";
 
 const authorsRouter = express.Router();
 
-authorsRouter.get("/authors", AuthorsController.getAuthors, pagination);
-authorsRouter.get("/authors/:id", AuthorsController.getAuthorById);
-authorsRouter.post("/authors", AuthorsController.createAuthor);
-authorsRouter.put("/authors/:id", AuthorsController.updateAuthor);
-authorsRouter.delete("/authors/:id", AuthorsController.removeAuthor);
+const authorsService = new AuthorsService();
+const authorsController = new AuthorsController(authorsService);
+
+authorsRouter.get("/authors", (req,res, next) => authorsController.getAuthors(req, res, next), pagination);
+authorsRouter.get("/authors/:id", (req,res, next) => authorsController.getAuthorById(req, res, next));
+authorsRouter.post("/authors", (req,res, next) => authorsController.createAuthor(req, res, next));
+authorsRouter.put("/authors/:id", (req,res, next) => authorsController.updateAuthor(req, res, next));
+authorsRouter.delete("/authors/:id", (req,res, next) => authorsController.removeAuthor(req, res, next));
 
 export default authorsRouter;
 

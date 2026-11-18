@@ -1,12 +1,12 @@
-import AuthorsService from "../services/authorsService.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
-const authorsService = new AuthorsService();
-
 class AuthorsController {
-  static getAuthors(req, res, next) {
+  constructor (authorsService) {
+    this.authorsService = authorsService;
+  }
+  getAuthors(req, res, next) {
     try {
-      const authorsList = authorsService.getAuthors();
+      const authorsList = this.authorsService.getAuthors();
 
       req.result = authorsList;
 
@@ -18,10 +18,10 @@ class AuthorsController {
     }
   }
 
-  static async getAuthorById(req, res, next) {
+  async getAuthorById(req, res, next) {
     try {
       const id = req.params.id;
-      const authorDoc = await authorsService.getAuthorById(id);
+      const authorDoc = await this.authorsService.getAuthorById(id);
 
       if (authorDoc !== null) {
         res.status(200).json(authorDoc);
@@ -33,9 +33,9 @@ class AuthorsController {
     }
   }
 
-  static async createAuthor(req, res, next) {
+  async createAuthor(req, res, next) {
     try {
-      const newAuthor = await authorsService.createAuthor(req.body);
+      const newAuthor = await this.authorsService.createAuthor(req.body);
 
       res
         .status(201)
@@ -45,9 +45,9 @@ class AuthorsController {
     }
   }
 
-  static async updateAuthor(req, res, next) {
+  async updateAuthor(req, res, next) {
     try {
-      const updatedAuthor = await authorsService.updateAuthor(req.params.id, req.body);
+      const updatedAuthor = await this.authorsService.updateAuthor(req.params.id, req.body);
 
       if (updatedAuthor !== null) {
         res
@@ -64,10 +64,10 @@ class AuthorsController {
     }
   }
 
-  static async removeAuthor(req, res, next) {
+  async removeAuthor(req, res, next) {
     try {
       const id = req.params.id;
-      const deletedAuthor = await authorsService.removeAuthor(id);
+      const deletedAuthor = await this.authorsService.removeAuthor(id);
 
       if (deletedAuthor !== null) {
         res
