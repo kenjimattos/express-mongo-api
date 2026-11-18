@@ -1,12 +1,13 @@
-import BooksService from "../services/booksService.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
-const booksService = new BooksService();
-
 class BooksController {
-  static getBooks(req, res, next) {
+  constructor(booksService) {
+    this.booksService = booksService;
+  }
+
+  getBooks(req, res, next) {
     try {
-      const booksList = booksService.getBooks();
+      const booksList = this.booksService.getBooks();
 
       req.result = booksList;
       next();
@@ -15,10 +16,10 @@ class BooksController {
     }
   }
 
-  static async getBookById(req, res, next) {
+  async getBookById(req, res, next) {
     try {
       const id = req.params.id;
-      const bookDoc = await booksService.getBookById(id);
+      const bookDoc = await this.booksService.getBookById(id);
 
       if (bookDoc !== null) {
         res.status(200).json(bookDoc);
@@ -30,9 +31,9 @@ class BooksController {
     }
   }
 
-  static async createBook(req, res, next) {
+  async createBook(req, res, next) {
     try {
-      const createdBook = await booksService.createBook(req.body);
+      const createdBook = await this.booksService.createBook(req.body);
 
       res
         .status(201)
@@ -42,9 +43,9 @@ class BooksController {
     }
   }
 
-  static async updateBook(req, res, next) {
+  async updateBook(req, res, next) {
     try {
-      const updatedBook = await booksService.updateBook(req);
+      const updatedBook = await this.booksService.updateBook(req);
 
       if (updatedBook !== null) {
         res
@@ -58,10 +59,10 @@ class BooksController {
     }
   }
 
-  static async removeBook(req, res, next) {
+  async removeBook(req, res, next) {
     try {
       const id = req.params.id;
-      const deletedBook = await booksService.removeBook(id);
+      const deletedBook = await this.booksService.removeBook(id);
 
       if (deletedBook !== null) {
         res
@@ -75,11 +76,11 @@ class BooksController {
     }
   }
 
-  static async queryBooks(req, res, next) {
+  async queryBooks(req, res, next) {
     try {
-      const processedQuery = await booksService.processQuery(req.query);
+      const processedQuery = await this.booksService.processQuery(req.query);
 
-      req.result = booksService.queryBooks(processedQuery);
+      req.result = this.booksService.queryBooks(processedQuery);
       next();
     } catch (error) {
       next(error);
