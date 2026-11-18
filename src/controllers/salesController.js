@@ -1,12 +1,12 @@
-import SalesService from "../services/salesService.js";
 import NotFoundError from "../middlewares/errors/notFoundError.js";
 
-const salesService = new SalesService();
-
 class SalesController {
-  static getSales(req, res, next) {
+  constructor(salesService) {
+    this.salesService = salesService;
+  }
+  getSales(req, res, next) {
     try {
-      const booksList = salesService.getSales();
+      const booksList = this.salesService.getSales();
 
       req.result = booksList;
       next();
@@ -15,10 +15,10 @@ class SalesController {
     }
   }
 
-  static async getSaleById(req, res, next) {
+  async getSaleById(req, res, next) {
     try {
       const id = req.params.id;
-      const saleData = await salesService.getSaleById(id);
+      const saleData = await this.salesService.getSaleById(id);
 
       if (saleData !== null) {
         res.status(200).json(saleData);
@@ -30,9 +30,9 @@ class SalesController {
     }
   }
 
-  static async createSale(req, res, next) {
+  async createSale(req, res, next) {
     try {
-      const createdSale = await salesService.createSale(req.body);
+      const createdSale = await this.salesService.createSale(req.body);
 
       res
         .status(201)
@@ -42,10 +42,10 @@ class SalesController {
     }
   }
 
-  static async removeSale(req, res, next) {
+  async removeSale(req, res, next) {
     try {
       const id = req.params.id;
-      const deletedSale = await salesService.removeSale(id);
+      const deletedSale = await this.salesService.removeSale(id);
 
       if (deletedSale !== null) {
         res
