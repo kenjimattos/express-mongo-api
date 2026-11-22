@@ -1,0 +1,53 @@
+# Nome exibido na aba "Actions" do GitHub
+name: Run tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        # Healthcheck: steps will only run after Mongo response
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [25.9.0]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: create .env.test
+      run: env > .env.test
+      env:
+        PORT: 3000
+        DB_NAME: test
+        DB_CONNECTION_STRING: mongodb://localhost:27017
+
+    - name: install dependencies
+      run: npm ci
+
+    - name: run linter
+      run: npm run lint
+
+    - name: run tests
+      run: npm test
