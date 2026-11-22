@@ -344,8 +344,8 @@ A GitHub Actions workflow in `.github/workflows/tests.yaml` ("Run tests") runs t
 The workflow has a single job, `test`, that runs on `ubuntu-latest` with these steps:
 
 1. **Service container**: starts `mongo:7` on `localhost:27017`. A healthcheck (`ping` every 5 seconds, up to 10 retries) makes the steps wait until MongoDB is ready.
-2. **Checkout**: `actions/checkout@v4` downloads the code.
-3. **Node.js**: `actions/setup-node@v4` installs the version from the `matrix.node-version` list (currently one version) and caches npm dependencies.
+2. **Checkout**: `actions/checkout@v5` downloads the code.
+3. **Node.js**: `actions/setup-node@v5` installs the version from the `matrix.node-version` list (currently one version) and caches npm dependencies.
 4. **`.env.test`**: the file is in `.gitignore`, so the workflow creates it with `env > .env.test`, using `PORT`, `DB_NAME` (`test`) and `DB_CONNECTION_STRING` (`mongodb://localhost:27017`) defined in the step's `env`.
 5. **`npm ci`**: installs the exact versions from `package-lock.json`.
 6. **`npm run lint`**: if the linter fails, the job stops before the tests.
