@@ -353,6 +353,5 @@ The workflow has a single job, `test`, that runs on `ubuntu-latest` with these s
 
 ### Changing the workflow
 
-- **Node version**: edit `matrix.node-version`. Add more versions to test on all of them.
 - **New environment variable**: add it to the `env` of the `create .env.test` step (and to `.env.example`).
 - **Reproduce locally**: run `npm ci`, `npm run lint` and `npm test` with a MongoDB running and `.env.test` set up as described in [Tests](#tests).
